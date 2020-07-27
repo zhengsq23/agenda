@@ -14,7 +14,9 @@ class Storage {
   /**
   *   default constructor
   */
-  Storage();
+  Storage(){
+    readFromFile("agenda.data");
+  }
 
   /**
   *   disallow the copy constructor and assign operator
@@ -47,13 +49,16 @@ class Storage {
   */
   static shared_ptr<Storage> getInstance(void)
   {
-
+    if (m_instance == nullptr)
+                shared_ptr<Storage> m_instance= make_shared<Storage>();
+    return m_instance;
   }
 
   /**
   *   destructor
   */
-  ~Storage();
+  ~Storage()
+  {}
 
   // CRUD for User & Meeting
   // using C++11 Function Template and Lambda Expressions
@@ -64,7 +69,7 @@ class Storage {
   */
   void createUser(const User &t_user)
   {
-
+    m_userList.push_back(t_user);
   }
 
   /**
@@ -74,7 +79,11 @@ class Storage {
   */
   list<User> queryUser(function<bool(const User &)> filter) const
   {
-
+    list<User> answerList;
+    for(auto i=m_userList.begin();i!=m_userList.end();i++){
+      if(filter(*i))answerList.push_back(*i);
+    }
+    return answerList;
   }
 
   /**
@@ -85,7 +94,14 @@ class Storage {
   */
   int updateUser(function<bool(const User &)> filter,function<void(User &)> switcher)
   {
-
+    int ans=0;
+    for(auto i=m_userList.begin();i!=m_userList.end();i++){
+      if(filter(*i)){
+        switcher(*i);
+        ans++;
+      }
+    }
+    return ans;
   }
 
   /**
@@ -95,7 +111,14 @@ class Storage {
   */
   int deleteUser(function<bool(const User &)> filter)
   {
-
+    int ans=0;
+    for(auto i=m_userList.begin();i!=m_userList.end();i++){
+      if(filter(*i))
+      { ans++;
+        m_userList.push_back(*i);
+      }
+    }
+    return ans;
   }
 
   /**
@@ -104,7 +127,7 @@ class Storage {
   */
   void createMeeting(const Meeting &t_meeting)
   {
-
+    m_meetingList.push_back(t_meeting);
   }
 
   /**
@@ -114,7 +137,11 @@ class Storage {
   */
   list<Meeting> queryMeeting(function<bool(const Meeting &)> filter) const
   {
-
+    list<Meeting> answerList;
+    for(auto i=m_meetingList.begin();i!=m_meetingList.end();i++){
+      if(filter(*i))answerList.push_back(*i);
+    }
+    return answerList;
   }
 
   /**
@@ -125,7 +152,14 @@ class Storage {
   */
   int updateMeeting(function<bool(const Meeting &)> filter,function<void(Meeting &)> switcher)
   {
-
+    int ans=0;
+    for(auto i=m_meetingList.begin();i!=m_meetingList.end();i++){
+      if(filter(*i)){
+        switcher(*i);
+        ans++;
+      }
+    }
+    return ans;
   }
 
   /**
@@ -135,7 +169,14 @@ class Storage {
   */
   int deleteMeeting(function<bool(const Meeting &)> filter)
   {
-
+    int ans=0;
+    for(auto i=m_meetingList.begin();i!=m_meetingList.end();i++){
+      if(filter(*i))
+      { ans++;
+        m_meetingList.push_back(*i);
+      }
+    }
+    return ans;
   }
 
   /**
@@ -143,7 +184,11 @@ class Storage {
   */
   bool sync(void)
   {
-
+    if(m_dirty){
+      writeToFile("agenda.data");
+      m_dirty=0;
+    }
+    return true;
   }
 
  private:
