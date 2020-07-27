@@ -3,7 +3,14 @@
 
 #include <initializer_list>
 #include <string>
+#include<iostream>
+#include<sstream>
 using namespace std; 
+bool isDigit(char s){
+  if(s<'0'||s>'9')return false;
+  else return true;
+}
+
 class Date {
  public:
   /**
@@ -35,16 +42,7 @@ class Date {
   */
   Date(const string &dateString)
   {
-    string year=dateString.substr(0,4);
-    string month=dateString.substr(5,2);
-    string day=dateString.substr(8,2);
-    string hour=dateString.substr(11,2);
-    string minute=dateString.substr(14,2);
-    m_year=year[0]*1000+year[1]*100+year[2]*10+year[3];
-    m_month=month[0]*10+month[1];
-    m_day=day[0]*10+day[1];
-    m_hour=hour[0]*10+hour[1];
-    m_minute=minute[0]*10+minute[1];
+    *this=stringToDate(dateString);
   }
   /**
   * @brief return the year of a Date
@@ -157,7 +155,7 @@ class Date {
       }
       else return false;
     }
-    else return false
+    else return false;
   }
 
   /**
@@ -168,24 +166,20 @@ class Date {
   static Date stringToDate(const string &t_dateString)
   {
     Date a;
-    a.Date();
-    for(int i=0;i<4;i++){
-      a.m_year=a.m_year*10+t_dateString[i];
+    if(t_dateString.size()!=16){
+      return a;
     }
-    for(int i=5;i<7;i++){
-      a.m_month=a.m_month*10+t_dateString[i];
-    }
-    for(int i=8;i<10;i++){
-      a.m_day=a.m_day*10+t_dateString[i];
-    }
-    for(int i=11;i<13;i++){
-      a.m_hour=a.m_hour*10+t_dateString[i];
-    }
-    for(int i=14;i<16;i++){
-      a.m_minute=a.m_minute*10+t_dateString[i];
-    }
-    return a;
-
+    if(!(isDigit(t_dateString[0])&&isDigit(t_dateString[1])&&isDigit(t_dateString[2])&&isDigit(t_dateString[3])&&isDigit(t_dateString[5])
+    &&isDigit(t_dateString[6])&&isDigit(t_dateString[8])&&isDigit(t_dateString[9])&&isDigit(t_dateString[11])&&isDigit(t_dateString[12])
+    &&isDigit(t_dateString[14])&&isDigit(t_dateString[15])&&t_dateString[4]=='-'&&t_dateString[7]=='-'&&t_dateString[10]=='/'
+    &&t_dateString[13]==':'))return a;
+    stringstream ss;
+    int y, m, d, h, mi;
+    char c;
+    ss << t_dateString;
+    ss >> y >> c >> m >> c
+       >> d >> c >> h >> c >> mi;
+    return Date(y, m, d, h, mi);
   }
 
   /**
@@ -193,25 +187,13 @@ class Date {
   * 0000-00-00/00:00
   */
   static string dateToString(const Date &t_date)
-  {
-    string time;
-    for(int i=3;i>=0;i--){
-        time[i]=m_year%10;
-        m_year/=10;
-    }
-    time[4]='-';
-    time[5]=m_month/10;
-    time[6]=m_month%10;
-    time[7]='-';
-    time[8]=m_day/10;
-    time[9]=m_day%10;
-    time[10]='/';
-    time[11]=m_hour/10;
-    time[12]=m_hour%10;
-    time[13]=':';
-    time[14]=m_minute/10;
-    time[15]=m_minute%10;
-    return time;
+  {stringstream ss;
+            ss << t_date.getYear() << "-"
+               << (t_date.getMonth()<10?"0":"")<<t_date.getMonth()<< "-"
+               << (t_date.getDay() <10?"0":"")<<t_date.getDay()<< "/"
+               << (t_date.getHour() <10?"0":"")<<t_date.getHour()<< ":"
+               << (t_date.getMinute()<10?"0":"")<<t_date.getMinute();
+            return ss.str();
   }
 
   /**
@@ -232,7 +214,7 @@ class Date {
   */
   bool operator==(const Date &t_date) const
   {
-    if(m_year==t_date.m_year&&m_month=t_date.m_month&&m_day=t_date.m_day&&m_hour=t_date.m_hour&&m_minute=t_date.m_minute)
+    if(m_year==t_date.m_year&&m_month==t_date.m_month&&m_day==t_date.m_day&&m_hour==t_date.m_hour&&m_minute==t_date.m_minute)
       return true;
     else return false;
   }
@@ -242,10 +224,24 @@ class Date {
   */
   bool operator>(const Date &t_date) const
   {
-   return getYear() > t_date.getYear() ? true :
-                   getMonth() > t_date.getMonth() ? true :
-                   getDay() > t_date.getDay() ? true :
-                   getHour() > t_date.getHour() ? true : false;
+   if(this->getYear()>t_date.getYear())return true;
+    if(this->getYear()<t_date.getYear())return false;
+    if(this->getYear()==t_date.getYear()){
+        if(this->getMonth()>t_date.getMonth())return true;
+        if(this->getMonth()<t_date.getMonth())return false;
+        if(this->getMonth()==t_date.getMonth()){
+            if(this->getDay()>t_date.getDay())return true;
+            if(this->getDay()<t_date.getDay())return false;
+            if(this->getDay()==t_date.getDay()){
+                if(this->getHour()>t_date.getHour())return true;
+                if(this->getHour()<t_date.getHour())return false;
+                if(this->getHour()==t_date.getHour()){
+                    if(this->getMinute()>t_date.getMinute())return true;
+                    if(this->getMinute()<=t_date.getMinute())return false;
+                }
+            }
+        }
+    }
   }
 
   /**

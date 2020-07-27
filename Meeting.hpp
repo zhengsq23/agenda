@@ -5,6 +5,7 @@
 #include<string>
 #include<iostream>
 #include "Date.hpp"
+
 using namespace std;
 class Meeting {
  public:
@@ -32,7 +33,7 @@ class Meeting {
   Meeting(const Meeting &t_meeting)
   {
         m_sponsor=t_meeting.m_sponsor;
-        m_participators=t_meeting.m_participator;
+        m_participators=t_meeting.m_participators;
         m_startDate=t_meeting.m_startDate;
         m_title=t_meeting.m_title;
         m_endDate=t_meeting.m_endDate;
@@ -89,10 +90,12 @@ class Meeting {
   */
   void removeParticipator(const string &t_participator)
   {
-        int i=m_participators.begin();
-        while(i<=m_participators.end()){
-                if(m_participators[i]==t_participator)m_participators.erase(i);
-                else i++;
+        vector<string>::iterator it=m_participators.begin();
+        while(it!=m_participators.end()){
+                if(*it==t_participator)m_participators.erase(it);
+                else {
+                      it++;
+                }
         }
   }
 
@@ -157,10 +160,12 @@ class Meeting {
   */
   bool isParticipator(const string &t_username) const
   {
-        int i=m_participators.begin();
-        while(i<=m_participators.end()){
-                if(m_participators[i]==t_username)return true;
-                else i++;
+        vector<string>::const_iterator it=m_participators.begin();
+        while(it!=m_participators.end()){
+                if(*it==t_username)return true;
+                else {
+                      it++;
+                }
         }
         return false;
   }
