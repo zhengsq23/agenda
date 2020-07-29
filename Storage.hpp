@@ -233,7 +233,7 @@ class Storage {
     for(auto i=m_userList.begin();i!=m_userList.end();i++){
       if(filter(*i))
       { ans++;
-        m_userList.push_back(*i);
+        m_userList.erase(i);
       }
     }
     return ans;
@@ -291,7 +291,7 @@ class Storage {
     for(auto i=m_meetingList.begin();i!=m_meetingList.end();i++){
       if(filter(*i))
       { ans++;
-        m_meetingList.push_back(*i);
+        m_meetingList.erase(i);
       }
     }
     return ans;
@@ -303,7 +303,7 @@ class Storage {
   bool sync(void)
   {
     if(m_dirty){
-      writeToFile("agenda.data");
+      writeToFile();
       m_dirty=0;
     }
     return true;
@@ -315,5 +315,5 @@ class Storage {
   list<Meeting> m_meetingList;
   bool m_dirty;
 };
-
+shared_ptr<Storage> Storage:: m_instance=nullptr;
 #endif
