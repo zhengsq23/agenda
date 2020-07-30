@@ -13,12 +13,18 @@ class AgendaService {
   /**
    * constructor
    */
-  AgendaService();
+  AgendaService()
+  {
+    startAgenda();
+  }
 
   /**
    * destructor
    */
-  ~AgendaService();
+  ~AgendaService()
+  {
+    quitAgenda();
+  }
 
   /**
    * check if the username match password
@@ -69,7 +75,10 @@ class AgendaService {
     auto filter = [userName, password](const User& user) {
       return user.getName() == userName && user.getPassword() == password;
     };
-    if(m_storage->deleteUser(filter))return true;
+    if(m_storage->deleteUser(filter)){
+      deleteAllMeetings(userName);
+      return true;
+    }
     else return false;
   }
 
@@ -100,29 +109,32 @@ class AgendaService {
       return meeting.getTitle()==title;
     };
     Date sdate(startDate),edate(endDate);
-    bool is_valid_sponsor=false,is_valid_participator=true,is_valid_meeting_sponsor=true,is_valid_meeting_participator=true,temp;
+    if(sdate>=edate||!Date::isValid(sdate)||!Date::isValid(edate))return false;
+    bool is_valid_sponsor=false,temp;
     for(auto i=listAllUsers().begin();i!=listAllUsers().end();i++){
       if(userName==(*i).getName())is_valid_sponsor=true;
-    }//举办者是否有效
+    }
+    if (!is_valid_sponsor)return false;//举办者是否有效
     for(auto j=participator.begin();j!=participator.end();j++){
       temp=false;
       for(auto i=listAllUsers().begin();i!=listAllUsers().end();i++){
         if((*j)==(*i).getName())temp=true;
       }
-      if(!temp)is_valid_participator=false;
+      if(!temp)return false;
     }//参与者是否有效
-    if(meetingQuery(userName,startDate,endDate).size()>0)is_valid_meeting_sponsor=false;//举办者是否在该时间有其他会议
+    list<Meeting> sponmeeting=meetingQuery(userName,startDate,endDate);
+    if(sponmeeting.size()>0&&(sponmeeting.front().getEndDate()!=sdate)
+    &&sponmeeting.front().getStartDate()!=edate)return false;//举办者是否在该时间有其他会议
     for(auto j=participator.begin();j!=participator.end();j++){
       temp=true;
-      for(auto i=listAllUsers().begin();i!=listAllUsers().end();i++){
-        if(meetingQuery((*j),startDate,endDate).size()>0)temp=false;
+      for(auto i=listAllMeetings(*j).begin();i!=listAllMeetings(*j).end();i++){
+        if(((*i).getEndDate()<=edate&&(*i).getEndDate()>sdate)||((*i).getStartDate()<edate&&(*i).getStartDate()>=sdate))temp=false;
       }
-      if(!temp)is_valid_meeting_participator=false;
+      if(!temp)return false;
     }//参与者是否在该时间有其他会议
-    if(m_storage->queryMeeting(filter).size()==0&&sdate<edate&&Date::isValid(sdate)&&Date::isValid(edate)
-    &&is_valid_sponsor&&is_valid_participator&&is_valid_meeting_sponsor&&is_valid_meeting_participator)
+    if(m_storage->queryMeeting(filter).size()==0)
     {
-      Meeting meeting(userName,participator,Date::stringToDate(startDate),Date::stringToDate(endDate),title);
+      Meeting meeting(userName,participator,sdate,edate,title);
       m_storage->createMeeting(meeting);
     }//创建会议，无主题重复，人员均有效，时间合法，开始早于结束，所有人员在该时间无其他会议
     else return false;
@@ -136,13 +148,18 @@ class AgendaService {
    */
   bool addMeetingParticipator(const string &userName,const string &title,const string &participator)
   {
-    if(meetingQuery(userName,title).size()>0){
+    auto filter=[userName,title,participator](const User &user){
+      return userName==user.getName();
+    };
+    if(m_storage->queryUser(filter).size<=0)return false;//参与者是否存在
+    if(meetingQuery(userName,title).size()>0){  //会议是否存在
       Meeting tmp=*(meetingQuery(userName,title).begin());
-      if(meetingQuery(participator,Date::dateToString(tmp.getStartDate()),Date::dateToString(tmp.getEndDate())).size()==0)
+      list<Meeting> partmeeting=meetingQuery(participator,Date::dateToString(tmp.getStartDate()),Date::dateToString(tmp.getEndDate()));
+      if(partmeeting.size()==0||partmeeting.front().getStartDate()==tmp.getEndDate()||partmeeting.front().getEndDate()==tmp.getStartDate())
       {
         tmp.addParticipator(participator);
         return true;
-      }    
+      }    //参与者是否有空
     }
     return false;
   }
@@ -220,7 +237,15 @@ class AgendaService {
    */
   list<Meeting> meetingQuery(const string &userName,const string &startDate, const string &endDate) const
   {
-
+    Date sdate(startDate),edate(endDate);
+    auto filter=[userName,startDate,endDate](const Meeting &meeting){
+      if(meeting.getSponsor()==userName){
+        if((meeting.getStartDate()<=edate&&meeting.getStartDate()>=sdate)||(meeting.getEndDate()<=edate&&meeting.getEndDate()>=sdate))
+        return true;
+      }
+      return false;
+    }
+    return m_storage->queryMeeting(filter);
   }
 
   /**
