@@ -12,7 +12,7 @@
 using namespace std;
 
 class Storage {
- private:
+ public:
   /**
   *   default constructor
   */

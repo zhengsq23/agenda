@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <string>
+#include<list>
+#include<vector>
 #include "AgendaService.hpp"
 using namespace std;
 class AgendaUI {
@@ -69,7 +71,7 @@ class AgendaUI {
                  << "dm  - delete meeting by title\n"
                  << "da  - delete all meetings\n"
                  << "______________________________________________________________________\n"
-                 << "\n" << "Agenda@" << userName_ << " :# ";
+                 << "\n" << "Agenda@" << m_userName << " :# ";
     string ans;
     cin>>ans;
     return ans;
@@ -130,7 +132,7 @@ class AgendaUI {
       return true;
     }
      if(t_operation=="dm"){
-      deleteMeetingByTitle
+      deleteMeetingByTitle();
       return true;
     }
      if(t_operation=="da"){
@@ -227,7 +229,7 @@ class AgendaUI {
     for(int i=0;i<num;i++){
       cout << "[create meeting] [please enter the participator "<<i<<" ]\n"<<"[create meeting] ";
       string par;
-      cin<<par;
+      cin>>par;
       ans.push_back(par);
     }
     cout<<"[create meeting] [title] [start time(yyyy-mm-dd/hh:mm)] [end time(yyyy-mm-dd/hh:mm)]\n" << "[create meeting] ";
@@ -248,8 +250,8 @@ class AgendaUI {
     string title,participator;
     cin>>title>>participator;
     if(m_agendaService.addMeetingParticipator(m_userName,title,participator))
-      cout<<"[add participator] succeed!\n"
-    else cout<<"[add participator] error!\n"
+      cout<<"[add participator] succeed!\n";
+    else cout<<"[add participator] error!\n";
   }
 
   /**
@@ -272,8 +274,8 @@ class AgendaUI {
   {
     cout<<"[quit meeting] [meeting title]\n"<<"[quit meeting] ";
     string title;
-    cin<<title;
-    if(m_agendaService.quitMeeting(m_agendaService,title))
+    cin>>title;
+    if(m_agendaService.quitMeeting(m_userName,title))
     cout<<"[quit meeting] succeed!\n";
     else cout<<"[quit meeting] error!\n";
 
@@ -303,7 +305,7 @@ class AgendaUI {
   void listAllParticipateMeetings(void)
   {
     cout<<"[list all participate meetings]\n";
-    printMeetings(m_agendaService.listAllParticipateMeetings(m_userName);
+    printMeetings(m_agendaService.listAllParticipateMeetings(m_userName));
   }
 
   /**
@@ -327,7 +329,7 @@ class AgendaUI {
            << "[query meetings] ";
       cin >> startDate >> endDate;
       cout<<"[query  meetings]\n";
-      printMeetings(m_agendaService.meetingQuery(m_userName, startDate, endDate);
+      printMeetings(m_agendaService.meetingQuery(m_userName, startDate, endDate));
   }
 
   /**
@@ -364,11 +366,18 @@ class AgendaUI {
     for (auto itr =t_meetings.begin(); itr != t_meetings.end(); itr++) {
         cout << itr->getTitle() << "\t"
              << itr->getSponsor() << "\t"
-             << itr->getParticipator() << "\t"
              << Date::dateToString(itr->getStartDate()) << "\t"
              << Date::dateToString(itr->getEndDate()) << "\n";
     }
   }
+  void printUsers(std::list<User> users) {
+            cout << "name\t" << "email\t" << "phone\n";
+            for (auto itr = users.begin(); itr != users.end(); itr++) {
+                cout << itr->getName() << "\t"
+                     << itr->getEmail()<< "\t"
+                     << itr->getPhone()<< "\n";
+            }
+        }
   // dates
   std::string m_userName;
   std::string m_userPassword;
